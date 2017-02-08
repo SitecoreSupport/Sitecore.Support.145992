@@ -20,6 +20,11 @@ namespace Sitecore.Support.ContentSearch.Azure
         {
         }
 
+        public override IIndexOperations Operations
+        {
+            get { return new Sitecore.Support.ContentSearch.Azure.CloudSearchIndexOperations(this); }
+        }
+
         #region Workaround for issue 136614
 
         public new ICloudSearchIndexSchemaBuilder SchemaBuilder

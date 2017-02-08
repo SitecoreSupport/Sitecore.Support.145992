@@ -64,8 +64,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CloudSearchDocumentBuilder.cs" />
+    <Compile Include="CloudSearchIndexOperations.cs" />
     <Compile Include="CloudSearchProviderIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PublicCloudIndexParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Config\Include\zzz\Sitecore.Support.145992.config" />
