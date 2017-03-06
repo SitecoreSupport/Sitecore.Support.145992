@@ -1,29 +1,42 @@
 ﻿
 namespace Sitecore.Support.ContentSearch.Azure
 {
+    using System;
     using System.Reflection;
     using Sitecore.ContentSearch;
     using Sitecore.ContentSearch.Azure.Http;
     using Sitecore.ContentSearch.Azure.Schema;
     using Sitecore.ContentSearch.Maintenance;
+    using Sitecore.ContentSearch.Security;
 
     public class CloudSearchProviderIndex : Sitecore.ContentSearch.Azure.CloudSearchProviderIndex
     {
+        private Action dEnsureInitialized;
+
         public CloudSearchProviderIndex(string name, string connectionStringName, string totalParallelServices,
             IIndexPropertyStore propertyStore) : base(name, connectionStringName, totalParallelServices, propertyStore)
         {
+            this.InitializeDelegates();
         }
 
         public CloudSearchProviderIndex(string name, string connectionStringName, string totalParallelServices,
             IIndexPropertyStore propertyStore, string @group)
             : base(name, connectionStringName, totalParallelServices, propertyStore, @group)
         {
+            this.InitializeDelegates();
         }
 
         public override IIndexOperations Operations
         {
             get { return new Sitecore.Support.ContentSearch.Azure.CloudSearchIndexOperations(this); }
         }
+
+        public override IProviderSearchContext CreateSearchContext(SearchSecurityOptions options)
+        {
+            this.dEnsureInitialized();
+            return new Sitecore.Support.ContentSearch.Azure.CloudSearchSearchContext(this, options);
+        }
+
 
         #region Workaround for issue 136614
 
@@ -51,5 +64,12 @@ namespace Sitecore.Support.ContentSearch.Azure
         }
 
         #endregion
+
+        protected void InitializeDelegates()
+        {
+            var t = typeof(Sitecore.ContentSearch.Azure.CloudSearchProviderIndex);
+            var m = t.GetMethod("EnsureInitialized", BindingFlags.Instance | BindingFlags.NonPublic);
+            this.dEnsureInitialized = m.CreateDelegate(typeof(Action), this) as Action;
+        }
     }
 }

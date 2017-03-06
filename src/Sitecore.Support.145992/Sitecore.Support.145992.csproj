@@ -40,6 +40,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\SC.Newtonsoft.Json.8.2.2\lib\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Sitecore.Abstractions, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SC.Sitecore.Abstractions.8.2.2\lib\Sitecore.Abstractions.dll</HintPath>
       <Private>False</Private>
@@ -50,6 +54,10 @@
     </Reference>
     <Reference Include="Sitecore.ContentSearch.Azure, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SC.Sitecore.ContentSearch.Azure.8.2.2\lib\Sitecore.ContentSearch.Azure.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sitecore.ContentSearch.Linq, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SC.Sitecore.ContentSearch.Linq.8.2.2\lib\Sitecore.ContentSearch.Linq.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sitecore.Kernel">
@@ -66,14 +74,20 @@
     <Compile Include="CloudSearchDocumentBuilder.cs" />
     <Compile Include="CloudSearchIndexOperations.cs" />
     <Compile Include="CloudSearchProviderIndex.cs" />
+    <Compile Include="CloudSearchSearchContext.cs" />
+    <Compile Include="LinqToCloudIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PublicCloudIndexParser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Config\Include\zzz\Sitecore.Support.145992.config" />
+    <Content Include="App_Config\Include\zzz\Sitecore.Support.145992.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="web.config" />
   </ItemGroup>
   <PropertyGroup>
