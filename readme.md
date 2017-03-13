@@ -7,6 +7,7 @@ The following issues have been resolved:
 * 150103 [Azure Search][Linq] Linq Provider can parse a service response 4 times
 * 147550 [Azure Search][Linq] Search result contains 50 items by default
 * 147549 [Azure Search][Linq] Count, Any, First, Single, ElementAt retrives exsessive documents
+* 151246 [Azure Search][Linq] Ampersand (&) can cause AzureSearchServiceRESTCallException exceptions
 * 147541 [Azure Search][Logging] Resulting native query is logged partially and in DEBUG level.
 
 
