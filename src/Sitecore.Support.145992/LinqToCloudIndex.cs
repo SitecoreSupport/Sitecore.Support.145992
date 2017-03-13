@@ -25,6 +25,7 @@ namespace Sitecore.Support.ContentSearch.Azure.Query
         private static MethodInfo miGetOrderByExpression;
         private static MethodInfo miGetFacetExpression;
         private static MethodInfo miApplyScalarMethods;
+        private static FieldInfo fiQueryOptimizer;
 
         static LinqToCloudIndex()
         {
@@ -38,16 +39,21 @@ namespace Sitecore.Support.ContentSearch.Azure.Query
 
             miApplyScalarMethods = t.GetMethod("ApplyScalarMethods", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(miApplyScalarMethods, "miApplyScalarMethods is null...");
+
+            var tCloudIndex = typeof(Sitecore.ContentSearch.Azure.Query.CloudIndex<TItem>);
+            fiQueryOptimizer = tCloudIndex.GetField("queryOptimizer", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         public LinqToCloudIndex(CloudSearchSearchContext context, IExecutionContext executionContext) : base(context, executionContext)
         {
             this.context = context;
+            fiQueryOptimizer.SetValue(this, new Sitecore.Support.ContentSearch.Azure.Query.CloudQueryOptimizer());
         }
 
         public LinqToCloudIndex(CloudSearchSearchContext context, IExecutionContext[] executionContexts) : base(context, executionContexts)
         {
             this.context = context;
+            fiQueryOptimizer.SetValue(this, new Sitecore.Support.ContentSearch.Azure.Query.CloudQueryOptimizer());
         }
 
         public override TResult Execute<TResult>(CloudQuery query)

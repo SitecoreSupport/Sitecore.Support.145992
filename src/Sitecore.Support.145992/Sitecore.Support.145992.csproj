@@ -71,6 +71,7 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudQueryOptimizer.cs" />
     <Compile Include="CloudSearchDocumentBuilder.cs" />
     <Compile Include="CloudSearchIndexOperations.cs" />
     <Compile Include="CloudSearchProviderIndex.cs" />
