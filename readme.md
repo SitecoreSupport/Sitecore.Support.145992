@@ -9,6 +9,7 @@ The following issues have been resolved:
 * 147549 [Azure Search][Linq] Count, Any, First, Single, ElementAt retrives exsessive documents
 * 151246 [Azure Search][Linq] Ampersand (&) can cause AzureSearchServiceRESTCallException exceptions
 * 147541 [Azure Search][Logging] Resulting native query is logged partially and in DEBUG level.
+* 157546 [Azure Search] Does not support full-text search
 
 
 ## License  
