@@ -11,7 +11,7 @@ The following issues have been resolved:
 * 147549 Count, Any, First, Single, ElementAt retrives exsessive documents.
 * 151246 Ampersand (&) can cause AzureSearchServiceRESTCallException exceptions.
 * 147541 Resulting native query is logged partially and in DEBUG level.
-* 157546 Does not support full-text search.
+* 157546 Azure Search provider does not support full-text search.
 
 ## License  
 
