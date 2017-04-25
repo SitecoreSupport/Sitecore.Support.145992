@@ -1,4 +1,5 @@
-# Sitecore.Support.145992
+# Sitecore.Support.158988
+formerly known as Sitecore.Support.145992
 
 The following issues have been resolved:
 
