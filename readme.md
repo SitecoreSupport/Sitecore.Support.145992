@@ -13,6 +13,7 @@ The following issues have been resolved:
 * 151246 Ampersand (&) can cause AzureSearchServiceRESTCallException exceptions.
 * 147541 Resulting native query is logged partially and in DEBUG level.
 * 157546 Azure Search provider does not support full-text search.
+* 155653 Collection field types (multilist, treelist and so on) contain old values when got cleared.
 
 ## License  
 
