@@ -126,8 +126,45 @@
       object obj2 = this.Index.Configuration.IndexFieldStorageValueFormatter.FormatValueForIndexStorage(id.Value, indexFieldName);
       string expression = $"&$filter=({indexFieldName} eq '{obj2}')&$select={CloudSearchConfig.VirtualFields.CloudUniqueId}";
       string textResults = (this.Index as CloudSearchProviderIndex).SearchService.Search(expression);
-      SearchResults results = this.deserializer.Deserialize(textResults);
-      this.Delete(results.Documents.First<IndexedDocument>().AzureUniqueId);
+
+      #region Fix Sitecore.Support.164633
+      //SearchResults results = this.deserializer.Deserialize(textResults);
+      //this.Delete(results.Documents.First<IndexedDocument>().AzureUniqueId);
+
+      SearchResults results = null;
+
+      if (!string.IsNullOrEmpty(textResults))
+      {
+        try
+        {
+          results = this.deserializer.Deserialize(textResults);
+        }
+        catch (Exception ex)
+        {
+          CrawlingLog.Log.Warn($"Item '{id.ToString()}' cannot be found in the '{this.index.Name}' so the document is not deleted from index.", ex);
+
+          return;
+        }
+
+        if (results.Documents.Count > 0)
+        {
+          try
+          {
+            this.Delete(results.Documents.First<IndexedDocument>().AzureUniqueId);
+          }
+          catch (Exception ex)
+          {
+            CrawlingLog.Log.Error($"(ItemId:'{id.ToString()}' cannot be deleted from the '{this.index.Name}' index.", ex);
+
+            return;
+          }
+
+          return;
+        }
+      }
+
+      CrawlingLog.Log.Warn($"Item '{id.ToString()}' cannot be found in the '{this.index.Name}' so the document is not deleted from index.", null);
+      #endregion
     }
 
     public void Delete(IIndexableUniqueId id)
