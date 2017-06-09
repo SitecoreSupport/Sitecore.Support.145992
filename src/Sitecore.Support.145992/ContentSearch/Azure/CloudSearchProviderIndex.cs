@@ -30,8 +30,8 @@ namespace Sitecore.Support.ContentSearch.Azure
     public override void Initialize()
     {
       base.Initialize();
-      var d = typeof(CloudSearchProviderIndex).BaseType.GetField("deserializer", BindingFlags.Instance | BindingFlags.NonPublic);
-      this.deserializer = d as ISearchResultsDeserializer;
+      var d = typeof(Sitecore.ContentSearch.Azure.CloudSearchProviderIndex).GetField("deserializer", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+      this.deserializer = (ISearchResultsDeserializer)d;
     }
 
     public override IIndexOperations Operations
