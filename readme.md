@@ -15,6 +15,7 @@ The following issues have been resolved:
 * 157546 Azure Search provider does not support full-text search.
 * 155653 Collection field types (multilist, treelist and so on) contain old values when got cleared.
 * 164633 The CloudSearchUpdateContext.Delete(IIndexableId) fails with an exception in case the search index does not contain any matching documents. (tag: 8.2.2.5)
+* 166765 Incorrect grouping of search clauses.
 
 ## License  
 
