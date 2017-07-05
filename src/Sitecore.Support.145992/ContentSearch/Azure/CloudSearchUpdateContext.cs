@@ -177,13 +177,17 @@
       this.Delete(PublicCloudIndexParser.HashUniqueId(id.Value.ToString()));
     }
 
-    private static readonly MethodInfo DeleteMethodInfo =
-        typeof(Sitecore.ContentSearch.Azure.CloudSearchUpdateContext).GetMethod("Delete",
-            BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(string)}, null);
     private void Delete(string cloudUniqueId)
     {
-        Assert.IsNotNull(DeleteMethodInfo, "Cannot perform operation because implementation was not found using reflection.");
-        DeleteMethodInfo.Invoke(this, new object[] {cloudUniqueId});
+       ConcurrentDictionary<string, object> concurrentDictionary = new ConcurrentDictionary<string, object>();
+       concurrentDictionary.TryAdd(CloudSearchConfig.VirtualFields.CloudUniqueId, cloudUniqueId);
+       this.documents.Add(new CloudSearchDocument(concurrentDictionary, SearchAction.Delete));
+       object obj = this.@lock;
+       lock (obj)
+       {
+          this.CommitPolicyExecutor.IndexModified(this, cloudUniqueId, IndexOperation.Delete);
+          this.statistics.IncrementDeleteUniqueCounter();
+       }
     }
 
     public void Dispose()
