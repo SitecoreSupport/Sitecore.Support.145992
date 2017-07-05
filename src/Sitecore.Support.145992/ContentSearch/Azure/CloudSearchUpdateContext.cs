@@ -16,6 +16,7 @@
   using System.Linq;
   using System.Reflection;
   using Sitecore.Diagnostics;
+  using Sitecore.Support.ContentSearch.Azure.Utils;
 
   public class CloudSearchUpdateContext : IProviderUpdateContext, IProviderOperationContext, IDisposable, ITrackingIndexingContext
   {
@@ -173,8 +174,7 @@
         throw new ArgumentNullException("id");
       }
 
-      var mi = typeof(CloudIndexParser).GetMethod("HashUniqueId", BindingFlags.Static | BindingFlags.Public);
-      this.Delete((string)mi.Invoke(null, new object[] { id.Value.ToString() }));
+      this.Delete(PublicCloudIndexParser.HashUniqueId(id.Value.ToString()));
     }
 
     private static readonly MethodInfo DeleteMethodInfo =
