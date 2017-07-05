@@ -15,8 +15,7 @@
   using System.Collections.Generic;
   using System.Linq;
   using System.Reflection;
-  using System.Runtime.CompilerServices;
-  using System.Threading.Tasks;
+  using Sitecore.Diagnostics;
 
   public class CloudSearchUpdateContext : IProviderUpdateContext, IProviderOperationContext, IDisposable, ITrackingIndexingContext
   {
@@ -125,7 +124,7 @@
       string indexFieldName = this.Index.FieldNameTranslator.GetIndexFieldName("_id");
       object obj2 = this.Index.Configuration.IndexFieldStorageValueFormatter.FormatValueForIndexStorage(id.Value, indexFieldName);
       string expression = $"&$filter=({indexFieldName} eq '{obj2}')&$select={CloudSearchConfig.VirtualFields.CloudUniqueId}";
-      string textResults = (this.Index as CloudSearchProviderIndex).SearchService.Search(expression);
+      string textResults = (this.Index as Sitecore.ContentSearch.Azure.CloudSearchProviderIndex).SearchService.Search(expression);
 
       #region Fix Sitecore.Support.164633
       //SearchResults results = this.deserializer.Deserialize(textResults);
@@ -178,17 +177,13 @@
       this.Delete((string)mi.Invoke(null, new object[] { id.Value.ToString() }));
     }
 
+    private static readonly MethodInfo DeleteMethodInfo =
+        typeof(Sitecore.ContentSearch.Azure.CloudSearchUpdateContext).GetMethod("Delete",
+            BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(string)}, null);
     private void Delete(string cloudUniqueId)
     {
-      ConcurrentDictionary<string, object> fields = new ConcurrentDictionary<string, object>();
-      fields.TryAdd(CloudSearchConfig.VirtualFields.CloudUniqueId, cloudUniqueId);
-      this.documents.Add(new CloudSearchDocument(fields, SearchAction.Delete));
-      object @lock = this.@lock;
-      lock (@lock)
-      {
-        this.CommitPolicyExecutor.IndexModified(this, cloudUniqueId, IndexOperation.Delete);
-        this.statistics.IncrementDeleteUniqueCounter();
-      }
+        Assert.IsNotNull(DeleteMethodInfo, "Cannot perform operation because implementation was not found using reflection.");
+        DeleteMethodInfo.Invoke(this, new object[] {cloudUniqueId});
     }
 
     public void Dispose()
