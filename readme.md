@@ -17,6 +17,10 @@ The following issues have been resolved:
 * 164633 The CloudSearchUpdateContext.Delete(IIndexableId) fails with an exception in case the search index does not contain any matching documents. (tag: 8.2.2.5)
 * 166765 Incorrect grouping of search clauses.
 
+new in 8.2.2.8
+* 94953 (226988) standard values are not indexed when IndexAllFields is set to false
+* 170254 wrong system type mapping for some Sitecore field types
+
 ## License  
 
 This patch is licensed under the [Sitecore Corporation A/S License for GitHub](https://github.com/sitecoresupport/Sitecore.Support.145992/blob/master/LICENSE).  
