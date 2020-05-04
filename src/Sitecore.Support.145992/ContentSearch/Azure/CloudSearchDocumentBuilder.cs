@@ -4,7 +4,12 @@ using Sitecore.ContentSearch.Diagnostics;
 using Sitecore.Diagnostics;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Sitecore.Data;
+using Sitecore.Data.Items;
+using Sitecore.Data.Managers;
 
 namespace Sitecore.Support.ContentSearch.Azure
 {
@@ -96,45 +101,106 @@ namespace Sitecore.Support.ContentSearch.Azure
             {
                 VerboseLogging.CrawlingLogDebug(() => "AddItemFields start");
 
-                if (this.Options.IndexAllFields)
-                {
-                    this.Indexable.LoadAllFields();
-                }
+                var fields = this.Options.IndexAllFields ?
+                    this.GetFieldsByItemList(this.Indexable) :
+                    this.GetFieldsByIncludedList(this.Indexable);
 
-                if (IsParallel)
-                {
-                    var exceptions = new ConcurrentQueue<Exception>();
-
-                    this.ParallelForeachProxy.ForEach(this.Indexable.Fields, this.ParallelOptions, f =>
-                      {
-                          try
-                          {
-                              this.CheckAndAddField(this.Indexable, f);
-                          }
-                          catch (Exception ex)
-                          {
-                              exceptions.Enqueue(ex);
-                          }
-                      });
-
-                    if (exceptions.Count > 0)
-                    {
-                        throw new AggregateException(exceptions);
-                    }
-                }
+                if (this.IsParallel)
+                    this.ProcessFieldsInParallel(fields);
                 else
-                {
-                    foreach (var field in this.Indexable.Fields)
-                    {
-                        this.CheckAndAddField(this.Indexable, field);
-                    }
-                }
+                    this.ProcessFieldsInSequence(fields);
             }
             finally
             {
                 VerboseLogging.CrawlingLogDebug(() => "AddItemFields End");
             }
         }
+
+        protected virtual IEnumerable<IIndexableDataField> GetFieldsByItemList([NotNull] IIndexable indexable)
+        {
+            indexable.LoadAllFields();
+
+            return indexable.Fields ?? Enumerable.Empty<IIndexableDataField>();
+        }
+
+        protected virtual IEnumerable<IIndexableDataField> GetFieldsByIncludedList([NotNull] IIndexable indexable)
+        {
+            var includedFields = this.Options.IncludedFields;
+
+            if (includedFields == null)
+            {
+                return Enumerable.Empty<IIndexableDataField>();
+            }
+
+            return this.Options.IncludedFields
+                .Select(key => this.GetFieldByKeyFromIndexable(indexable, key))
+                .Where(field => field != null);
+        }
+
+        protected virtual IIndexableDataField GetFieldByKeyFromIndexable(IIndexable indexable, string fieldKey)
+        {
+            return ID.TryParse(fieldKey, out var id) ?
+                GetFieldById(indexable, id) :
+                indexable.GetFieldByName(fieldKey);
+        }
+
+        private static IIndexableDataField GetFieldById(IIndexable indexable, object fieldId)
+        {
+            if (indexable is SitecoreIndexableItem sitecoreIndexableItem)
+            {
+            }
+            else
+            {
+                return null;
+            }
+
+            var id = fieldId as ID;
+
+            if (id == (ID)null)
+            {
+                return null;
+            }
+
+            if (!ItemHasField(sitecoreIndexableItem.Item, id))
+            {
+                return null;
+            }
+
+            return (SitecoreItemDataField)sitecoreIndexableItem.Item.Fields[id];
+        }
+
+        private static bool ItemHasField(Item item, ID fieldId) => TemplateManager.IsFieldPartOfTemplate(fieldId, item);
+
+        protected virtual void ProcessFieldsInParallel([NotNull] IEnumerable<IIndexableDataField> fields)
+        {
+            var exceptions = new ConcurrentQueue<Exception>();
+
+            this.ParallelForeachProxy.ForEach(fields, this.ParallelOptions, f =>
+            {
+                try
+                {
+                    this.CheckAndAddField(this.Indexable, f);
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Enqueue(ex);
+                }
+            });
+
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
+            }
+        }
+
+        protected virtual void ProcessFieldsInSequence([NotNull] IEnumerable<IIndexableDataField> fields)
+        {
+            foreach (var field in fields)
+            {
+                this.CheckAndAddField(this.Indexable, field);
+            }
+        }
+
 
         private static readonly MethodInfo checkAndAddFieldMethodInfo =
             typeof(Sitecore.ContentSearch.Azure.CloudSearchDocumentBuilder).BaseType?.GetMethod("CheckAndAddField",
