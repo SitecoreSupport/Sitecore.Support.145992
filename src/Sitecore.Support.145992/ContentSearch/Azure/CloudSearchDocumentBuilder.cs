@@ -1,10 +1,13 @@
-﻿namespace Sitecore.Support.ContentSearch.Azure
+﻿using Sitecore.ContentSearch;
+using Sitecore.ContentSearch.Azure;
+using Sitecore.ContentSearch.Diagnostics;
+using Sitecore.Diagnostics;
+using System;
+using System.Collections.Concurrent;
+using System.Reflection;
+
+namespace Sitecore.Support.ContentSearch.Azure
 {
-    using Sitecore.ContentSearch;
-    using Sitecore.ContentSearch.Azure;
-    using System;
-    using Sitecore.ContentSearch.Diagnostics;
-    using System.Collections.Concurrent;
     public class CloudSearchDocumentBuilder : Sitecore.ContentSearch.Azure.CloudSearchDocumentBuilder
     {
         public CloudSearchDocumentBuilder(IIndexable indexable, IProviderUpdateContext context) : base(indexable, context)
@@ -85,6 +88,66 @@
 
                 this.AddField(computedIndexField.FieldName, fieldValue, true);
             }
+        }
+
+        public override void AddItemFields()
+        {
+            try
+            {
+                VerboseLogging.CrawlingLogDebug(() => "AddItemFields start");
+
+                if (this.Options.IndexAllFields)
+                {
+                    this.Indexable.LoadAllFields();
+                }
+
+                if (IsParallel)
+                {
+                    var exceptions = new ConcurrentQueue<Exception>();
+
+                    this.ParallelForeachProxy.ForEach(this.Indexable.Fields, this.ParallelOptions, f =>
+                      {
+                          try
+                          {
+                              this.CheckAndAddField(this.Indexable, f);
+                          }
+                          catch (Exception ex)
+                          {
+                              exceptions.Enqueue(ex);
+                          }
+                      });
+
+                    if (exceptions.Count > 0)
+                    {
+                        throw new AggregateException(exceptions);
+                    }
+                }
+                else
+                {
+                    foreach (var field in this.Indexable.Fields)
+                    {
+                        this.CheckAndAddField(this.Indexable, field);
+                    }
+                }
+            }
+            finally
+            {
+                VerboseLogging.CrawlingLogDebug(() => "AddItemFields End");
+            }
+        }
+
+        private static readonly MethodInfo checkAndAddFieldMethodInfo =
+            typeof(Sitecore.ContentSearch.Azure.CloudSearchDocumentBuilder).BaseType?.GetMethod("CheckAndAddField",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+        private void CheckAndAddField(IIndexable indexable, IIndexableDataField field)
+        {
+            if (checkAndAddFieldMethodInfo == null)
+            {
+                Log.SingleError("Sitecore.Support.145992: checkAndAddFieldMethodInfo is not initialized", this);
+                return;
+            }
+
+            checkAndAddFieldMethodInfo.Invoke(this, new object[] {indexable, field});
         }
     }
 }
