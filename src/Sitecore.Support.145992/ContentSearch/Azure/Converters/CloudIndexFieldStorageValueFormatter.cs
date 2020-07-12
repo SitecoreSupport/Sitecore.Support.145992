@@ -42,7 +42,8 @@
         return null;
       }
 
-      var fieldSchema = this.SearchIndex.SchemaBuilder.GetSchema().GetFieldByCloudName(fieldName);
+      var fieldSchema = this.SearchIndex.SchemaBuilder.GetSchema().GetFieldByCloudName(fieldName) ??
+                        this.SearchIndex.SearchService.Schema.GetFieldByCloudName(fieldName);
       if (fieldSchema == null)
       {
         return value;
